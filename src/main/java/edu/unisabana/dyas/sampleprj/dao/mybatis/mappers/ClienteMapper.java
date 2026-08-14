@@ -12,7 +12,8 @@ import edu.unisabana.dyas.samples.entities.Cliente;
  */
 public interface ClienteMapper {
     
-    public Cliente consultarCliente(int id); 
+    public Cliente consultarCliente(@Param("idcli") int id);
+
     
     /**
      * Registrar un nuevo item rentado asociado al cliente identificado

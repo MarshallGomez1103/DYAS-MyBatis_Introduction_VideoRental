@@ -17,7 +17,7 @@
 package edu.unisabana.dyas.samples.services.client;
 
 
-
+import java.sql.Date;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -26,6 +26,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ClienteMapper;
+import edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ItemMapper;
+import edu.unisabana.dyas.samples.entities.Item;
+import edu.unisabana.dyas.samples.entities.TipoItem;
 
 
 /**
@@ -65,15 +68,41 @@ public class MyBatisExample {
         SqlSession sqlss = sessionfact.openSession();
 
         
-        ClienteMapper cm = sqlss.getMapper(ClienteMapper.class);
-        System.out.println(cm.consultarClientes());
-        
-        
-        
-        sqlss.commit();
-        
-        
-        sqlss.close();
+        try {
+            ClienteMapper clienteMapper = sqlss.getMapper(ClienteMapper.class);
+            ItemMapper itemMapper = sqlss.getMapper(ItemMapper.class);
+
+            System.out.println("Clientes: " + clienteMapper.consultarClientes());
+            System.out.println("Cliente 123456789: "
+                    + clienteMapper.consultarCliente(123456789));
+
+            Item itemDePrueba = new Item(
+                    new TipoItem(3, "Herramienta"),
+                    4,
+                    "Taladro de prueba",
+                    "Item usado para comprobar insertarItem",
+                    Date.valueOf("2026-08-16"),
+                    6500,
+                    "Diario",
+                    "Herramienta"
+            );
+            itemMapper.insertarItem(itemDePrueba);
+            clienteMapper.agregarItemRentadoACliente(
+                    555555555,
+                    itemDePrueba.getId(),
+                    Date.valueOf("2026-08-16"),
+                    Date.valueOf("2026-08-20")
+            );
+
+            System.out.println("Item insertado: " + itemMapper.consultarItem(4));
+            System.out.println("Todos los items: " + itemMapper.consultarItems());
+            System.out.println("Cliente con alquiler de prueba: "
+                    + clienteMapper.consultarCliente(555555555));
+        } finally {
+            // Las inserciones solo son de prueba: no se guardan al cerrar la sesión.
+            sqlss.rollback();
+            sqlss.close();
+        }
 
         
         

@@ -4,8 +4,80 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
 <mapper namespace="edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ItemMapper">
+    <resultMap type="Item" id="ItemResult">
+        <id property="id" column="id"/>
+        <result property="nombre" column="nombre"/>
+        <result property="descrpcion" column="descripcion"/>
+        <result property="fechaLanzamiento" column="fechalanzamiento"/>
+        <result property="tarifaxDia" column="tarifaxdia"/>
+        <result property="formatoRenta" column="formatorenta"/>
+        <result property="genero" column="genero"/>
 
+        <association property="tipo" javaType="TipoItem"
+                     resultMap="TipoItemResult" columnPrefix="ti_"/>
+    </resultMap>
 
-    
-    
+    <resultMap type="TipoItem" id="TipoItemResult">
+        <id property="ID" column="id"/>
+        <result property="descripcion" column="descripcion"/>
+    </resultMap>
+
+    <insert id="insertarItem" parameterType="map">
+        INSERT INTO VI_ITEMS (
+            id,
+            nombre,
+            descripcion,
+            fechalanzamiento,
+            tarifaxdia,
+            formatorenta,
+            genero,
+            TIPOITEM_id
+        )
+        VALUES (
+            #{item.id},
+            #{item.nombre},
+            #{item.descripcion},
+            strftime(
+                '%Y-%m-%d',
+                #{item.fechaLanzamiento, javaType=java.sql.Date} / 1000,
+                'unixepoch'
+            ),
+            #{item.tarifaxDia},
+            #{item.formatoRenta},
+            #{item.genero},
+            #{item.tipo.ID}
+        )
+    </insert>
+
+    <select id="consultarItem" parameterType="map" resultMap="ItemResult">
+        SELECT
+            i.id,
+            i.nombre,
+            i.descripcion,
+            i.fechalanzamiento || ' 00:00:00.000' AS fechalanzamiento,
+            i.tarifaxdia,
+            i.formatorenta,
+            i.genero,
+            ti.id AS ti_id,
+            ti.descripcion AS ti_descripcion
+        FROM VI_ITEMS i
+        INNER JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
+        WHERE i.id = #{id}
+    </select>
+
+    <select id="consultarItems" resultMap="ItemResult">
+        SELECT
+            i.id,
+            i.nombre,
+            i.descripcion,
+            i.fechalanzamiento || ' 00:00:00.000' AS fechalanzamiento,
+            i.tarifaxdia,
+            i.formatorenta,
+            i.genero,
+            ti.id AS ti_id,
+            ti.descripcion AS ti_descripcion
+        FROM VI_ITEMS i
+        INNER JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
+    </select>
+
 </mapper>
